@@ -8,8 +8,16 @@ module.exports = {
   theme: {
     extend: {
       // You can extend Tailwind's default theme here
+      colors: {
+        'pink': '#fe009c',
+        'yellow': '#ffee07',
+        'black': '#100e0e',
+        'orange': '#f15204',
+        'twitch': '#6441a5',
+        'youtube': '#FF0000',
+      },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'], // Set Inter as the default sans-serif font
+        'montserrat': ['"Montserrat"', 'cursive'],
       },
     },
   },

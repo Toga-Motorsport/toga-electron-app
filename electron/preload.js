@@ -1,20 +1,40 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
-// Expose a limited set of IPC methods to the renderer process
+// Debug log to verify preload is running
+console.log('Preload script is running');
 contextBridge.exposeInMainWorld('electronAPI', {
-    // Example of sending a message from renderer to main
-    sendMessage: (message) => ipcRenderer.send('send-message-to-main', message),
+    requestAuthCode: () => {
+        ipcRenderer.send('get-auth-code');
+        return new Promise((resolve) => {
+            ipcRenderer.once('discord-oauth-callback', (_, code) => {
+                resolve(code);
+            });
+        })
+    }
+});
+// Expose select APIs to the renderer process
+contextBridge.exposeInMainWorld('electron', {
+    // Handle Discord OAuth callback
+    handleOAuthCallback: (callback) => {
+        console.log('OAuth callback handler registered');
 
-    // Example of receiving messages from main process (e.g., auto-update messages)
-    onUpdateMessage: (callback) => ipcRenderer.on('update_message', (_event, value) => callback(value)),
+        // Listen for direct OAuth callbacks
+        ipcRenderer.on('discord-oauth-callback', (event, code) => {
+            console.log('IPC: Received Discord OAuth callback code');
+            callback(code);
+        });
 
-    // You can expose other APIs as needed, for example:
-    // openExternalLink: (url) => ipcRenderer.send('open-external-link', url),
+        // Request any stored auth code
+        console.log('Requesting stored auth code');
+        ipcRenderer.send('get-auth-code');
+    },
+
+    // Open external links safely
+    openExternal: (url) => {
+        console.log('Opening external URL:', url);
+        ipcRenderer.send('open-external', url);
+    }
 });
 
-// Example of listening for a message from the renderer (in main.js, this would be `ipcMain.on('send-message-to-main', ...)`)
-ipcRenderer.on('send-message-to-main', (event, message) => {
-    console.log('Message from renderer:', message);
-    // Do something with the message in the preload script, or forward to main
-});
-
+// Add a console log to indicate preload script has finished executing
+console.log('Preload script finished setup');

@@ -43,3 +43,5 @@ Thumbs.db
 *.swp
 .DS_Store
 package-lock.json
+dist_electron
+dist/*

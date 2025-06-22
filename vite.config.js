@@ -8,8 +8,19 @@ export default defineConfig({
   build: {
     outDir: 'dist', // Output directory for web assets
   },
-  // Ensure that Electron's main process can load the bundled renderer
   server: {
-    port: 3000, // Or any port you prefer for the dev server
-  },
+    port: 3000,
+    proxy: {
+      '/api': {
+        target: 'http://togamotorsport.local',
+        changeOrigin: true,
+        secure: false,
+        configure: (proxy, _options) => {
+          proxy.on('proxyReq', (proxyReq, req, _res) => {
+            console.log('Proxying:', req.method, req.url);
+          });
+        }
+      }
+    }
+  }
 })

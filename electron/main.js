@@ -1,89 +1,104 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, shell } = require('electron');
 const path = require('node:path');
-const { autoUpdater } = require('electron-updater'); // Import autoUpdater
+const express = require('express');
+const server = express();
+const port = 3000;
 
-// Configure logging for auto-updater (optional but recommended)
-autoUpdater.logger = require('electron-log');
-autoUpdater.logger.transports.file.level = 'info';
-
+// Track the main window
 let mainWindow;
 
+// Create the main application window
 function createWindow() {
     mainWindow = new BrowserWindow({
         width: 900,
         height: 600,
         webPreferences: {
-            preload: path.join(__dirname, 'preload.js'), // Load the preload script
-            nodeIntegration: false, // It's safer to keep this false and use contextBridge
-            contextIsolation: true, // Enable context isolation for security
+            preload: path.join(__dirname, 'preload.js'),
+            nodeIntegration: false,
+            contextIsolation: true,
         },
     });
 
-    // Load the React app (Vite dev server in dev, bundled HTML in production)
+    // Load the appropriate URL based on environment
     if (process.env.NODE_ENV === 'development') {
-        mainWindow.loadURL('http://localhost:3000'); // Vite dev server URL
-        mainWindow.webContents.openDevTools(); // Open DevTools in development
+        mainWindow.loadURL('http://localhost:3000');
+        mainWindow.webContents.openDevTools();
     } else {
-        // In production, load the built HTML file
         mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
     }
 
-    // Handle window close event
     mainWindow.on('closed', () => {
         mainWindow = null;
     });
 }
+
+// Set up the Express server to handle Discord OAuth callback
+server.get('/auth/discord', (req, res) => {
+    const code = req.query.code;
+    console.log('Received Discord auth code:', code);
+
+    // Save the code globally
+    global.discordAuthCode = code;
+
+    // Send code to renderer if window exists
+    if (mainWindow && code) {
+        console.log('Sending code to renderer process');
+
+        // First load the auth callback page
+        const callbackUrl = process.env.NODE_ENV === 'development'
+            ? 'http://localhost:3000/auth/discord'
+            : `file://${path.join(__dirname, '../dist/index.html')}#/auth/discord`;
+
+        mainWindow.loadURL(callbackUrl);
+
+        // Wait for page to load before sending the code
+        mainWindow.webContents.once('did-finish-load', () => {
+            console.log('Page loaded, now sending auth code');
+            mainWindow.webContents.send('discord-oauth-callback', code);
+        });
+    }
+
+    // Show success page to user
+    res.send(`
+        <html><body>
+            <h1>Authentication Successful!</h1>
+            <p>You can close this window and return to the app.</p>
+            <script>setTimeout(() => window.close(), 3000);</script>
+        </body></html>
+    `);
+});
+
+// Start the Express server
+server.listen(port, () => {
+    console.log(`Local OAuth server listening at http://localhost:${port}`);
+});
 
 // App lifecycle events
 app.whenReady().then(() => {
     createWindow();
 
     app.on('activate', () => {
-        // On macOS it's common to re-create a window in the app when the
-        // dock icon is clicked and there are no other windows open.
         if (BrowserWindow.getAllWindows().length === 0) {
             createWindow();
         }
     });
 
-    // --- Auto-updater setup ---
-    autoUpdater.checkForUpdatesAndNotify(); // Check for updates on app start
-
-    // Listen for update events and send messages to renderer
-    autoUpdater.on('checking-for-update', () => {
-        mainWindow.webContents.send('update_message', 'Checking for update...');
+    // Handle external URL opening
+    ipcMain.on('open-external', (event, url) => {
+        shell.openExternal(url);
     });
 
-    autoUpdater.on('update-available', (info) => {
-        mainWindow.webContents.send('update_message', `Update available: ${info.version}. Downloading...`);
-    });
-
-    autoUpdater.on('update-not-available', (info) => {
-        mainWindow.webContents.send('update_message', 'No new updates available.');
-    });
-
-    autoUpdater.on('error', (err) => {
-        mainWindow.webContents.send('update_message', `Error in auto-updater: ${err.message}`);
-    });
-
-    autoUpdater.on('download-progress', (progressObj) => {
-        const msg = `Download speed: ${progressObj.bytesPerSecond} - Downloaded ${progressObj.percent}% (${progressObj.transferred}/${progressObj.total})`;
-        mainWindow.webContents.send('update_message', msg);
-    });
-
-    autoUpdater.on('update-downloaded', (info) => {
-        mainWindow.webContents.send('update_message', 'Update downloaded. App will restart to install.');
-        // Optional: Ask user before quitting and installing
-        setTimeout(() => {
-            autoUpdater.quitAndInstall(); // Install update and restart the app
-        }, 5000); // Give user 5 seconds to see the message
+    // Handle requests for stored auth code
+    ipcMain.on('get-auth-code', (event) => {
+        if (global.discordAuthCode) {
+            console.log('Sending stored auth code to renderer');
+            event.sender.send('discord-oauth-callback', global.discordAuthCode);
+        } else {
+            console.log('No stored auth code found');
+        }
     });
 });
 
-
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
         app.quit();
