@@ -3,7 +3,9 @@ const path = require('node:path');
 const express = require('express');
 const server = express();
 const port = 3000;
-require('dotenv').config();
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config();
+}
 
 // Track the main window
 let mainWindow;
