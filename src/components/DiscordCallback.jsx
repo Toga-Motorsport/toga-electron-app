@@ -40,7 +40,7 @@ const DiscordCallback = () => {
 
 
                 const apiUrl = isElectron
-                    ? 'http://togamotorsport.local/api/auth/verify-discord' // Electron-specific endpoint
+                    ? 'https://togamotorsport.co.uk/api/auth/verify-discord' // Electron-specific endpoint
                     : '/api/auth/verify-discord';
                 // Send the code to your backend
                 const response = await fetch(apiUrl, {
