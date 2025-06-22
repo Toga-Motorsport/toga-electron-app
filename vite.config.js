@@ -8,6 +8,9 @@ export default defineConfig({
   build: {
     outDir: 'dist', // Output directory for web assets
   },
+  define: {
+    'process.env.GH_TOKEN': JSON.stringify(process.env.GH_TOKEN)
+  },
   server: {
     port: 3000,
     proxy: {

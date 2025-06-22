@@ -12,7 +12,7 @@
     "build:electron": "electron-builder",
     "build": "npm run build:react && npm run build:electron",
     "preview": "vite preview",
-    "release": "npm run build:react && electron-builder --publish always"
+    "release": "cross-env npm run build:react && electron-builder --publish always"
   },
   "dependencies": {
     "electron-log": "^5.4.1",
@@ -27,6 +27,7 @@
     "@types/react-dom": "^18.2.22",
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.21",
+    "cross-env": "^7.0.3",
     "electron": "^29.2.0",
     "electron-builder": "^24.13.3",
     "postcss": "^8.5.6",
