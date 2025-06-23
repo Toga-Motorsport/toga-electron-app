@@ -35,19 +35,21 @@ function createWindow() {
             preload: path.join(__dirname, 'preload.js'),
             nodeIntegration: false,
             contextIsolation: true,
-            devTools: process.env.NODE_ENV === 'development',
-            autoHideMenuBar :true,
+            devTools: process.env.NODE_ENV !== 'development',
+            autoHideMenuBar :false,
         },
     });
 
     if (process.env.NODE_ENV === 'production') {
         mainWindow.setMenu(null);
     }
+    console.log('Creating main window');
+    console.log(process.env.NODE_ENV);
 
     // Load the appropriate URL based on environment
     if (process.env.NODE_ENV === 'development') {
         mainWindow.loadURL('http://localhost:3000');
-        mainWindow.webContents.openDevTools();
+        //mainWindow.webContents.openDevTools();
     } else {
         mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
         mainWindow.webContents.autoHideMenuBar = true;

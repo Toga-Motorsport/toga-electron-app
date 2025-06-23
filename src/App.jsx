@@ -72,7 +72,7 @@ function UserProfile({user, logout}) {
 
                         <div className="flex flex-col items-center px-2 py-2">
                             <p className="text-xs pb-0.5 text-gray-400">Favorite Track</p>
-                            <p className="text-md font-semibold text-lightblue text-center normal-case">{user?.fav_track || 'Not Set'}</p>
+                            <p className="text-md font-semibold text-lightblue text-center capitalize">{user?.fav_track || 'Not Set'}</p>
                         </div>
                     </div>
                 </div>

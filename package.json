@@ -8,11 +8,13 @@
   "scripts": {
     "dev": "vite",
     "start": "cross-env NODE_ENV=production electron .",
+    "start_dev": "electron .",
     "build:react": "cross-env NODE_ENV=production vite build",
+    "build:react_dev": "cross-env NODE_ENV=development vite build",
     "build:electron": "electron-builder",
     "build": "npm run build:react && npm run build:electron",
     "preview": "vite preview",
-    "release": "cross-env NODE_ENV=development npm run build:react && electron-builder --publish always"
+    "release": "cross-env NODE_ENV=production npm run build:react && electron-builder --publish always"
   },
   "dependencies": {
     "dotenv": "^16.5.0",
