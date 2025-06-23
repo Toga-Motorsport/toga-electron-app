@@ -73,10 +73,9 @@ function createWindow() {
             preload: path.join(__dirname, 'preload.js'),
             nodeIntegration: false,
             contextIsolation: true,
-            devTools: process.env.NODE_ENV === 'development'
+            devTools: process.env.NODE_ENV === 'development',
+            autoHideMenuBar : process.env.NODE_ENV === 'production',
         },
-
-        autoHideMenuBar: process.env.NODE_ENV === 'production',
     });
 
     if (process.env.NODE_ENV === 'production') {
