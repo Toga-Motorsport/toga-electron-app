@@ -4,9 +4,6 @@ const express = require('express');
 const server = express();
 const port = 3000
 const { autoUpdater } = require('electron-updater');;
-if (process.env.NODE_ENV !== 'production') {
-    require('dotenv').config();
-}
 
 // if (!process.env.NODE_ENV) {
 //   process.env.NODE_ENV = app.isPackaged ? 'production' : 'development';
@@ -19,27 +16,27 @@ function setupAutoUpdater() {
     // Log update events
     autoUpdater.logger = require('electron-log');
     autoUpdater.logger.transports.file.level = 'info';
-    
+
     // Check for updates immediately when app starts
     autoUpdater.checkForUpdatesAndNotify();
-    
+
     // Set up auto updater events
     autoUpdater.on('checking-for-update', () => {
         sendStatusToWindow('Checking for update...');
     });
-    
+
     autoUpdater.on('update-available', (info) => {
         sendStatusToWindow('Update available. Downloading...');
     });
-    
+
     autoUpdater.on('update-not-available', (info) => {
         sendStatusToWindow('Application is up to date.');
     });
-    
+
     autoUpdater.on('error', (err) => {
         sendStatusToWindow(`Error in auto-updater: ${err.toString()}`);
     });
-    
+
     autoUpdater.on('download-progress', (progressObj) => {
         sendStatusToWindow(
             `Download speed: ${progressObj.bytesPerSecond} - ` +
@@ -47,13 +44,13 @@ function setupAutoUpdater() {
             `(${progressObj.transferred} / ${progressObj.total})`
         );
     });
-    
+
     autoUpdater.on('update-downloaded', (info) => {
         sendStatusToWindow('Update downloaded. Will install on restart.');
         // If you want to install immediately:
         // autoUpdater.quitAndInstall();
     });
-    
+
     // Check for updates periodically (e.g., every 2 hours)
     setInterval(() => {
         autoUpdater.checkForUpdatesAndNotify();

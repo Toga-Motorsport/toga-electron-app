@@ -7,8 +7,8 @@
   "author": "Toga Motorsport <togamotorsport@gmail.com>",
   "scripts": {
     "dev": "vite",
-    "start": "cross-env NODE_ENV=development electron .",
-    "build:react": "cross-env NODE_ENV=development vite build",
+    "start": "electron .",
+    "build:react": "vite build",
     "build:electron": "electron-builder",
     "build": "npm run build:react && npm run build:electron",
     "preview": "vite preview",
