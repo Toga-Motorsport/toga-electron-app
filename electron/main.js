@@ -2,68 +2,30 @@ const { app, BrowserWindow, ipcMain, shell } = require('electron');
 const path = require('node:path');
 const express = require('express');
 const server = express();
-const port = 3000
-const { autoUpdater } = require('electron-updater');;
-
-// if (!process.env.NODE_ENV) {
-//   process.env.NODE_ENV = app.isPackaged ? 'production' : 'development';
-// }
+const port = 3000;
+// Add these imports at the top
+const { autoUpdater } = require('electron-updater');
+const log = require('electron-log');
 
 // Track the main window
 let mainWindow;
 
-function setupAutoUpdater() {
-    // Log update events
-    autoUpdater.logger = require('electron-log');
-    autoUpdater.logger.transports.file.level = 'info';
+// Configure logging for auto-updater
+// This writes logs to:
+// - on Windows: %USERPROFILE%\AppData\Roaming\{app name}\logs\{process type}.log
+// - on macOS: ~/Library/Logs/{app name}/{process type}.log
+log.transports.file.level = 'info';
+console.log = log.log;
+autoUpdater.logger = log;
 
-    // Check for updates immediately when app starts
-    autoUpdater.checkForUpdatesAndNotify();
-
-    // Set up auto updater events
-    autoUpdater.on('checking-for-update', () => {
-        sendStatusToWindow('Checking for update...');
-    });
-
-    autoUpdater.on('update-available', (info) => {
-        sendStatusToWindow('Update available. Downloading...');
-    });
-
-    autoUpdater.on('update-not-available', (info) => {
-        sendStatusToWindow('Application is up to date.');
-    });
-
-    autoUpdater.on('error', (err) => {
-        sendStatusToWindow(`Error in auto-updater: ${err.toString()}`);
-    });
-
-    autoUpdater.on('download-progress', (progressObj) => {
-        sendStatusToWindow(
-            `Download speed: ${progressObj.bytesPerSecond} - ` +
-            `Downloaded ${progressObj.percent}% ` +
-            `(${progressObj.transferred} / ${progressObj.total})`
-        );
-    });
-
-    autoUpdater.on('update-downloaded', (info) => {
-        sendStatusToWindow('Update downloaded. Will install on restart.');
-        // If you want to install immediately:
-        // autoUpdater.quitAndInstall();
-    });
-
-    // Check for updates periodically (e.g., every 2 hours)
-    setInterval(() => {
-        autoUpdater.checkForUpdatesAndNotify();
-    }, 2 * 60 * 60 * 1000);
-}
-
+// Simple function to send update messages to the renderer
 function sendStatusToWindow(text) {
-  console.log(text);
+  log.info(text);
   if (mainWindow && mainWindow.webContents) {
     mainWindow.webContents.send('update-message', text);
   }
 }
-console.log(process.env.NODE_ENV);
+
 // Create the main application window
 function createWindow() {
     mainWindow = new BrowserWindow({
@@ -88,12 +50,48 @@ function createWindow() {
         mainWindow.webContents.openDevTools();
     } else {
         mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
-        //mainWindow.webContents.closeDevTools();
+        mainWindow.webContents.autoHideMenuBar = true;
     }
 
     mainWindow.on('closed', () => {
         mainWindow = null;
     });
+}
+
+// Set up auto-updater event listeners
+function setupAutoUpdater() {
+  // When update checking starts
+  autoUpdater.on('checking-for-update', () => {
+    sendStatusToWindow('Checking for updates...');
+  });
+
+  // When an update is available
+  autoUpdater.on('update-available', (info) => {
+    sendStatusToWindow(`Update available: ${info.version}`);
+  });
+
+  // When no update is available
+  autoUpdater.on('update-not-available', (info) => {
+    sendStatusToWindow('Your app is up to date.');
+  });
+
+  // When update is downloading
+  autoUpdater.on('download-progress', (progressObj) => {
+    let logMessage = `Download speed: ${progressObj.bytesPerSecond}`;
+    logMessage = `${logMessage} - Downloaded ${progressObj.percent}%`;
+    logMessage = `${logMessage} (${progressObj.transferred}/${progressObj.total})`;
+    sendStatusToWindow(logMessage);
+  });
+
+  // When update is downloaded and ready to install
+  autoUpdater.on('update-downloaded', (info) => {
+    sendStatusToWindow('Update downloaded. It will be installed on restart.');
+  });
+
+  // If there's an error during update
+  autoUpdater.on('error', (err) => {
+    sendStatusToWindow(`Error in auto-updater: ${err.toString()}`);
+  });
 }
 
 // Set up the Express server to handle Discord OAuth callback
@@ -140,16 +138,24 @@ server.listen(port, () => {
 // App lifecycle events
 app.whenReady().then(() => {
     createWindow();
+    
+    // Only set up auto-updater in production
+    if (process.env.NODE_ENV !== 'development') {
+        setupAutoUpdater();
+        
+        // Check for updates right after app starts
+        // (with a small delay to let the app load first)
+        setTimeout(() => {
+            sendStatusToWindow('Checking for updates after startup...');
+            autoUpdater.checkForUpdates();
+        }, 3000);
+    }
 
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) {
             createWindow();
         }
     });
-
-    if (process.env.NODE_ENV === 'production') {
-        setupAutoUpdater();
-    }
 
     // Handle external URL opening
     ipcMain.on('open-external', (event, url) => {
@@ -165,10 +171,14 @@ app.whenReady().then(() => {
             console.log('No stored auth code found');
         }
     });
-
+    
+    // Manual update check (can be triggered from UI)
     ipcMain.on('check-for-updates', () => {
-        if (process.env.NODE_ENV === 'production') {
-            autoUpdater.checkForUpdatesAndNotify();
+        if (process.env.NODE_ENV !== 'development') {
+            sendStatusToWindow('Manually checking for updates...');
+            autoUpdater.checkForUpdates();
+        } else {
+            sendStatusToWindow('Updates are disabled in development mode');
         }
     });
 });

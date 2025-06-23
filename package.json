@@ -12,12 +12,12 @@
     "build:electron": "electron-builder",
     "build": "npm run build:react && npm run build:electron",
     "preview": "vite preview",
-     "release": "cross-env NODE_ENV=development npm run build:react && electron-builder --publish always"
+    "release": "cross-env NODE_ENV=development npm run build:react && electron-builder --publish always"
   },
   "dependencies": {
     "dotenv": "^16.5.0",
     "electron-log": "^5.4.1",
-    "electron-updater": "^6.1.7",
+    "electron-updater": "^6.6.2",
     "express": "^5.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -36,7 +36,7 @@
     "vite": "^5.2.0"
   },
   "build": {
-    "appId": "com.yourapp.id",
+    "appId": "com.togamotorsport.app",
     "productName": "Toga Motorsport App",
     "copyright": "Copyright © 2025 ${author}",
     "directories": {

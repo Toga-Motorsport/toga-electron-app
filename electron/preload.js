@@ -11,21 +11,22 @@ contextBridge.exposeInMainWorld('electronAPI', {
             });
         })
     },
-
-    // Auto-updater related
-  onUpdateMessage: (callback) => {
-    const channel = 'update-message';
-    // Add listener and store the removal function
-    ipcRenderer.on(channel, (_, message) => callback(message));
-    // Return a function to remove the listener (for cleanup)
-    return () => ipcRenderer.removeListener(channel, callback);
-  },
-  checkForUpdates: () => {
-    ipcRenderer.send('check-for-updates');
-  }
-
     
+    // Add auto-update related functions
+    checkForUpdates: () => {
+        console.log('Renderer requesting update check');
+        ipcRenderer.send('check-for-updates');
+    },
+    
+    onUpdateMessage: (callback) => {
+        // Listen for update messages from main process
+        ipcRenderer.on('update-message', (_, message) => {
+            console.log('Update message received:', message);
+            callback(message);
+        });
+    }
 });
+
 // Expose select APIs to the renderer process
 contextBridge.exposeInMainWorld('electron', {
     // Handle Discord OAuth callback
@@ -48,8 +49,6 @@ contextBridge.exposeInMainWorld('electron', {
         console.log('Opening external URL:', url);
         ipcRenderer.send('open-external', url);
     }
-
-    
 });
 
 // Add a console log to indicate preload script has finished executing

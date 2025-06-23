@@ -19,6 +19,25 @@ const CustomRouter = ({children}) => {
     return <RouterComponent>{children}</RouterComponent>;
 };
 
+// A simple component to display update status
+function UpdateStatus({ message, onCheckUpdate }) {
+    const isElectron = isElectronEnvironment();
+    
+    if (!isElectron) return null;
+    
+    return (
+        <div className="fixed bottom-4 right-4 bg-gray-800 p-2 rounded-lg shadow-md border border-gray-700 text-sm max-w-xs">
+            <p className="text-gray-300 text-xs mb-1 font-medium">{message}</p>
+            <button
+                onClick={onCheckUpdate}
+                className="bg-blue-600 hover:bg-blue-700 text-white text-xs py-1 px-2 rounded-md transition-colors"
+            >
+                Check for Updates
+            </button>
+        </div>
+    );
+}
+
 function UserProfile({user, logout}) {
     return (
         <div className="bg-gray-900 mx-auto p-4 rounded-xl shadow-xl border border-gray-600 mb-8 w-full max-w-6xl">
@@ -101,51 +120,30 @@ function Counter({count, setCount}) {
     );
 }
 
-function UpdateStatus({message}) {
-    return (
-        <div className="bg-white mx-auto p-6 rounded-xl shadow-xl border border-gray-200 w-full max-w-md">
-            <h2 className="text-2xl font-semibold text-gray-700 mb-4">
-                Auto-Updater Status:
-            </h2>
-            <p className="text-gray-600 text-center break-words">
-                {message}
-            </p>
-        </div>
-    );
-}
 
 function MainContent() {
     const [count, setCount] = useState(0);
-    const [updateMessage, setUpdateMessage] = useState("Checking for updates...");
+    const [updateMessage, setUpdateMessage] = useState("Waiting for update status...");
     const {user, logout} = useAuth();
     const appVersion = packageInfo.version;
-
+    const isElectron = isElectronEnvironment();
+    
+    // Listen for update messages
     useEffect(() => {
-        if (window.electronAPI?.onUpdateMessage) {
-            // Set up listener for update messages
-            const removeListener = window.electronAPI.onUpdateMessage((message) => {
-                console.log('Update message:', message);
+        if (isElectron && window.electronAPI) {
+            // Set up listener for update messages from main process
+            window.electronAPI.onUpdateMessage((message) => {
+                console.log('Update message in React:', message);
                 setUpdateMessage(message);
             });
-
-            // Check for updates when component mounts
-            if (window.electronAPI?.checkForUpdates) {
-                window.electronAPI.checkForUpdates();
-            }
-
-            // Clean up listener when component unmounts
-            return () => {
-                if (removeListener) removeListener();
-            };
-        } else {
-            setUpdateMessage("Electron API not available (might be running in browser dev mode).");
         }
-    }, []);
-
+    }, [isElectron]);
+    
+    // Function to check for updates
     const handleCheckUpdate = () => {
-        if (window.electronAPI?.checkForUpdates) {
-            setUpdateMessage("Checking for updates...");
+        if (isElectron && window.electronAPI) {
             window.electronAPI.checkForUpdates();
+            setUpdateMessage('Checking for updates...');
         }
     };
 
@@ -161,31 +159,17 @@ function MainContent() {
 
             {user ? <UserProfile user={user} logout={logout}/> : <LoginPrompt/>}
 
-            {/*{user && <Counter count={count} setCount={setCount}/>}*/}
-
-            {/*{user && (*/}
-            {/*    <div className="bg-gray-900 mx-auto p-6 rounded-xl shadow-xl border border-gray-600 mb-8 w-full max-w-md">*/}
-            {/*        <h2 className="text-xl font-semibold text-orange mb-4">*/}
-            {/*            Auto-Updater Status*/}
-            {/*        </h2>*/}
-            {/*        <p className="text-white text-center break-words mb-4">*/}
-            {/*            {updateMessage}*/}
-            {/*        </p>*/}
-            {/*        <button*/}
-            {/*            id="check-update-button"*/}
-            {/*            onClick={handleCheckUpdate}*/}
-            {/*            className="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded hover:bg-blue-700 transition-colors"*/}
-            {/*        >*/}
-            {/*            Check for Updates*/}
-            {/*        </button>*/}
-            {/*    </div>*/}
-            {/*)}*/}
-
             <p className="mt-8 text-white font-semibold text-center text-sm">
                 <span className="text-sm font-bold text-orange bg-gray-700 px-2 py-1 rounded-md">
             v{appVersion}
           </span> Built with love for you!
             </p>
+            
+            {/* Add the update status component */}
+            {isElectron && <UpdateStatus 
+                message={updateMessage} 
+                onCheckUpdate={handleCheckUpdate} 
+            />}
         </div>
     );
 }
