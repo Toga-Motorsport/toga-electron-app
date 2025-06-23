@@ -7,18 +7,23 @@ if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config();
 }
 
+if (!process.env.NODE_ENV) {
+  process.env.NODE_ENV = app.isPackaged ? 'production' : 'development';
+}
+
 // Track the main window
 let mainWindow;
 
 // Create the main application window
 function createWindow() {
     mainWindow = new BrowserWindow({
-        width: 900,
+        width: 1000,
         height: 600,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             nodeIntegration: false,
             contextIsolation: true,
+            devTools: process.env.NODE_ENV === 'development'
         },
     });
 
@@ -28,6 +33,7 @@ function createWindow() {
         mainWindow.webContents.openDevTools();
     } else {
         mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
+        mainWindow.webContents.closeDevTools();
     }
 
     mainWindow.on('closed', () => {
