@@ -36,7 +36,7 @@ function createWindow() {
             nodeIntegration: false,
             contextIsolation: true,
             devTools: process.env.NODE_ENV === 'development',
-            autoHideMenuBar : process.env.NODE_ENV === 'production',
+            autoHideMenuBar :true,
         },
     });
 

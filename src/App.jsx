@@ -151,7 +151,7 @@ function MainContent() {
         <div
             className="container mx-auto flex flex-col items-center justify-center min-h-screen p-4 font-montserrat rounded-lg shadow-lg">
             <h1 className="text-4xl text-center font-bold text-orange mb-6 drop-shadow-md">
-                WELCOME TO THE TOGA MOTORSPORT APP
+                TOGA MOTORSPORT APP
                 <div className="text-center mb-4">
 
                 </div>
