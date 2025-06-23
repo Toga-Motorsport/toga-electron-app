@@ -74,7 +74,9 @@ function setupAutoUpdater() {
 
   // When no update is available
   autoUpdater.on('update-not-available', (info) => {
+    autoUpdater.on('update-not-available', (info) => {
     sendStatusToWindow('Your app is up to date.');
+  });
   });
 
   // When update is downloading
