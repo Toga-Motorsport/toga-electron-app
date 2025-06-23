@@ -127,7 +127,7 @@ function MainContent() {
                 console.log('Update message:', message);
                 setUpdateMessage(message);
             });
-            
+
             // Check for updates when component mounts
             if (window.electronAPI?.checkForUpdates) {
                 window.electronAPI.checkForUpdates();
@@ -163,23 +163,23 @@ function MainContent() {
 
             {/*{user && <Counter count={count} setCount={setCount}/>}*/}
 
-            {user && (
-                <div className="bg-gray-900 mx-auto p-6 rounded-xl shadow-xl border border-gray-600 mb-8 w-full max-w-md">
-                    <h2 className="text-xl font-semibold text-orange mb-4">
-                        Auto-Updater Status
-                    </h2>
-                    <p className="text-white text-center break-words mb-4">
-                        {updateMessage}
-                    </p>
-                    <button
-                        id="check-update-button"
-                        onClick={handleCheckUpdate}
-                        className="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded hover:bg-blue-700 transition-colors"
-                    >
-                        Check for Updates
-                    </button>
-                </div>
-            )}
+            {/*{user && (*/}
+            {/*    <div className="bg-gray-900 mx-auto p-6 rounded-xl shadow-xl border border-gray-600 mb-8 w-full max-w-md">*/}
+            {/*        <h2 className="text-xl font-semibold text-orange mb-4">*/}
+            {/*            Auto-Updater Status*/}
+            {/*        </h2>*/}
+            {/*        <p className="text-white text-center break-words mb-4">*/}
+            {/*            {updateMessage}*/}
+            {/*        </p>*/}
+            {/*        <button*/}
+            {/*            id="check-update-button"*/}
+            {/*            onClick={handleCheckUpdate}*/}
+            {/*            className="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded hover:bg-blue-700 transition-colors"*/}
+            {/*        >*/}
+            {/*            Check for Updates*/}
+            {/*        </button>*/}
+            {/*    </div>*/}
+            {/*)}*/}
 
             <p className="mt-8 text-white font-semibold text-center text-sm">
                 <span className="text-sm font-bold text-orange bg-gray-700 px-2 py-1 rounded-md">

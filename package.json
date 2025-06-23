@@ -1,14 +1,14 @@
 {
   "name": "toga-motorsport-app",
   "private": true,
-  "version": "1.1.6",
+  "version": "1.1.7",
   "main": "electron/main.js",
   "description": "A React Electron app with Tailwind CSS and auto-updater.",
   "author": "Toga Motorsport <togamotorsport@gmail.com>",
   "scripts": {
     "dev": "vite",
-    "start": "electron .",
-    "build:react": "vite build",
+    "start": "cross-env NODE_ENV=production electron .",
+    "build:react": "cross-env NODE_ENV=production vite build",
     "build:electron": "electron-builder",
     "build": "npm run build:react && npm run build:electron",
     "preview": "vite preview",

@@ -63,7 +63,7 @@ function sendStatusToWindow(text) {
     mainWindow.webContents.send('update-message', text);
   }
 }
-
+console.log(process.env.NODE_ENV);
 // Create the main application window
 function createWindow() {
     mainWindow = new BrowserWindow({
