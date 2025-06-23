@@ -25,7 +25,13 @@ function createWindow() {
             contextIsolation: true,
             devTools: process.env.NODE_ENV === 'development'
         },
+
+        autoHideMenuBar: process.env.NODE_ENV === 'production',
     });
+
+    if (process.env.NODE_ENV === 'production') {
+        mainWindow.setMenu(null);
+    }
 
     // Load the appropriate URL based on environment
     if (process.env.NODE_ENV === 'development') {
