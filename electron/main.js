@@ -2,7 +2,8 @@ const { app, BrowserWindow, ipcMain, shell } = require('electron');
 const path = require('node:path');
 const express = require('express');
 const server = express();
-const port = 3000;
+const port = 3000
+const { autoUpdater } = require('electron-updater');;
 if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config();
 }
@@ -13,6 +14,58 @@ if (process.env.NODE_ENV !== 'production') {
 
 // Track the main window
 let mainWindow;
+
+function setupAutoUpdater() {
+    // Log update events
+    autoUpdater.logger = require('electron-log');
+    autoUpdater.logger.transports.file.level = 'info';
+    
+    // Check for updates immediately when app starts
+    autoUpdater.checkForUpdatesAndNotify();
+    
+    // Set up auto updater events
+    autoUpdater.on('checking-for-update', () => {
+        sendStatusToWindow('Checking for update...');
+    });
+    
+    autoUpdater.on('update-available', (info) => {
+        sendStatusToWindow('Update available. Downloading...');
+    });
+    
+    autoUpdater.on('update-not-available', (info) => {
+        sendStatusToWindow('Application is up to date.');
+    });
+    
+    autoUpdater.on('error', (err) => {
+        sendStatusToWindow(`Error in auto-updater: ${err.toString()}`);
+    });
+    
+    autoUpdater.on('download-progress', (progressObj) => {
+        sendStatusToWindow(
+            `Download speed: ${progressObj.bytesPerSecond} - ` +
+            `Downloaded ${progressObj.percent}% ` +
+            `(${progressObj.transferred} / ${progressObj.total})`
+        );
+    });
+    
+    autoUpdater.on('update-downloaded', (info) => {
+        sendStatusToWindow('Update downloaded. Will install on restart.');
+        // If you want to install immediately:
+        // autoUpdater.quitAndInstall();
+    });
+    
+    // Check for updates periodically (e.g., every 2 hours)
+    setInterval(() => {
+        autoUpdater.checkForUpdatesAndNotify();
+    }, 2 * 60 * 60 * 1000);
+}
+
+function sendStatusToWindow(text) {
+  console.log(text);
+  if (mainWindow && mainWindow.webContents) {
+    mainWindow.webContents.send('update-message', text);
+  }
+}
 
 // Create the main application window
 function createWindow() {
@@ -98,6 +151,10 @@ app.whenReady().then(() => {
         }
     });
 
+    if (process.env.NODE_ENV === 'production') {
+        setupAutoUpdater();
+    }
+
     // Handle external URL opening
     ipcMain.on('open-external', (event, url) => {
         shell.openExternal(url);
@@ -110,6 +167,12 @@ app.whenReady().then(() => {
             event.sender.send('discord-oauth-callback', global.discordAuthCode);
         } else {
             console.log('No stored auth code found');
+        }
+    });
+
+    ipcMain.on('check-for-updates', () => {
+        if (process.env.NODE_ENV === 'production') {
+            autoUpdater.checkForUpdatesAndNotify();
         }
     });
 });

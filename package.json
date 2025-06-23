@@ -7,12 +7,12 @@
   "author": "Toga Motorsport <togamotorsport@gmail.com>",
   "scripts": {
     "dev": "vite",
-    "start": "cross-env NODE_ENV=production electron .",
-    "build:react": "cross-env NODE_ENV=production vite build",
+    "start": "cross-env NODE_ENV=development electron .",
+    "build:react": "cross-env NODE_ENV=development vite build",
     "build:electron": "electron-builder",
     "build": "npm run build:react && npm run build:electron",
     "preview": "vite preview",
-     "release": "cross-env NODE_ENV=production npm run build:react && electron-builder --publish always"
+     "release": "cross-env NODE_ENV=development npm run build:react && electron-builder --publish always"
   },
   "dependencies": {
     "dotenv": "^16.5.0",
