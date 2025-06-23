@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, dialog } = require('electron');
 const path = require('node:path');
 const express = require('express');
 const server = express();
@@ -6,7 +6,7 @@ const port = 3000;
 // Add these imports at the top
 const { autoUpdater } = require('electron-updater');
 const log = require('electron-log');
-
+log.info('App starting... Version:', app.getVersion());
 // Track the main window
 let mainWindow;
 
@@ -24,6 +24,16 @@ function sendStatusToWindow(text) {
   if (mainWindow && mainWindow.webContents) {
     mainWindow.webContents.send('update-message', text);
   }
+}
+
+function setupPeriodicUpdateChecks() {
+    const FOUR_HOURS = 4 * 60 * 60 * 1000;
+    setInterval(() => {
+        log.info('Scheduled update check...');
+        autoUpdater.checkForUpdates().catch(err => {
+            log.error('Scheduled check failed:', err);
+        });
+    }, FOUR_HOURS);
 }
 
 // Create the main application window
@@ -69,8 +79,8 @@ function setupAutoUpdater() {
 
   // When an update is available
   autoUpdater.on('update-available', (info) => {
-    sendStatusToWindow(`Update available: ${info.version}`);
-  });
+    sendStatusToWindow(`Update available: ${app.getVersion()} → ${info.version}`);
+});
 
   // When no update is available
   autoUpdater.on('update-not-available', (info) => {
@@ -81,21 +91,63 @@ function setupAutoUpdater() {
 
   // When update is downloading
   autoUpdater.on('download-progress', (progressObj) => {
-    let logMessage = `Download speed: ${progressObj.bytesPerSecond}`;
-    logMessage = `${logMessage} - Downloaded ${progressObj.percent}%`;
-    logMessage = `${logMessage} (${progressObj.transferred}/${progressObj.total})`;
-    sendStatusToWindow(logMessage);
-  });
+    // Format percentage with 1 decimal point
+    const percent = progressObj.percent.toFixed(1);
+    
+    // Calculate download speed in a readable format
+    let speed = progressObj.bytesPerSecond;
+    let speedUnit = 'B/s';
+    
+    if (speed > 1024) {
+        speed /= 1024;
+        speedUnit = 'KB/s';
+    }
+    
+    if (speed > 1024) {
+        speed /= 1024;
+        speedUnit = 'MB/s';
+    }
+    
+    const formattedSpeed = speed.toFixed(1) + ' ' + speedUnit;
+    
+    // Build a cleaner message
+    let message = `Downloaded ${percent}% (${formattedSpeed})`;
+    sendStatusToWindow(message);
+});
 
   // When update is downloaded and ready to install
   autoUpdater.on('update-downloaded', (info) => {
-    sendStatusToWindow('Update downloaded. It will be installed on restart.');
-  });
+    sendStatusToWindow('Update downloaded. Click "Restart & Install" to apply the update.');
+    
+    // Optional: Show a native dialog for maximum visibility
+    if (mainWindow) {
+        const dialogOpts = {
+            type: 'info',
+            buttons: ['Later', 'Restart Now'],
+            title: 'Application Update',
+            message: 'A new version has been downloaded.',
+            detail: 'Restart the application to apply the update.'
+        };
+        
+        dialog.showMessageBox(mainWindow, dialogOpts).then((returnValue) => {
+            if (returnValue.response === 1) {
+                autoUpdater.quitAndInstall(true, true);
+            }
+        });
+    }
+});
 
   // If there's an error during update
   autoUpdater.on('error', (err) => {
-    sendStatusToWindow(`Error in auto-updater: ${err.toString()}`);
-  });
+    const errorMessage = `Update error: ${err.message || err.toString()}`;
+    sendStatusToWindow(errorMessage);
+    log.error(errorMessage);
+    
+    // After a timeout, suggest manual download
+    setTimeout(() => {
+        sendStatusToWindow('Could not update automatically. Please download the latest version from our website.');
+    }, 5000);
+});
 }
 
 // Set up the Express server to handle Discord OAuth callback
@@ -146,6 +198,7 @@ app.whenReady().then(() => {
     // Only set up auto-updater in production
     if (process.env.NODE_ENV !== 'development') {
         setupAutoUpdater();
+        setupPeriodicUpdateChecks(); // Add this line to enable periodic checks
         
         // Check for updates right after app starts
         // (with a small delay to let the app load first)
@@ -185,6 +238,14 @@ app.whenReady().then(() => {
             sendStatusToWindow('Updates are disabled in development mode');
         }
     });
+
+    ipcMain.on('restart-and-install', () => {
+    log.info('User triggered app restart to install update');
+    sendStatusToWindow('Restarting to install update...');
+    
+    // Quit and install with explicit user action
+    autoUpdater.quitAndInstall(true, true);
+});
 });
 
 app.on('window-all-closed', () => {

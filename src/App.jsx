@@ -22,18 +22,71 @@ const CustomRouter = ({children}) => {
 // A simple component to display update status
 function UpdateStatus({ message, onCheckUpdate }) {
     const isElectron = isElectronEnvironment();
+    const [updateReady, setUpdateReady] = useState(false);
+    const [downloadProgress, setDownloadProgress] = useState(0);
     
-    if (!isElectron) return null;
+    // Parse download progress from message
+    useEffect(() => {
+        if (message.includes('Downloaded')) {
+            // Extract percentage from message like "Downloaded 45%"
+            const percentMatch = message.match(/Downloaded\s+(\d+)%/);
+            if (percentMatch && percentMatch[1]) {
+                setDownloadProgress(parseInt(percentMatch[1]));
+            }
+        }
+        
+        if (message.includes('Update downloaded')) {
+            setUpdateReady(true);
+            setDownloadProgress(100);
+        }
+    }, [message]);
+    
+    // Don't render if not in Electron or if message is empty
+    if (!isElectron || message === '') return null;
+    
+    // Handle restart to install update
+    const handleRestart = () => {
+        if (window.electronAPI) {
+            window.electronAPI.restartAndInstall();
+        }
+    };
+    
+    // Determine if currently downloading
+    const isDownloading = message.includes('Download') && !message.includes('downloaded');
     
     return (
-        <div className="fixed bottom-4 right-4 bg-gray-800 p-2 rounded-lg shadow-md border border-gray-700 text-sm max-w-xs">
-            <p className="text-gray-300 text-xs mb-1 font-medium">{message}</p>
-            <button
-                onClick={onCheckUpdate}
-                className="bg-blue-600 hover:bg-blue-700 text-white text-xs py-1 px-2 rounded-md transition-colors"
-            >
-                Check for Updates
-            </button>
+        <div className="fixed bottom-4 right-4 bg-gray-800 p-3 rounded-lg shadow-md border border-gray-700 text-sm max-w-xs">
+            <p className="text-gray-300 text-xs mb-2 font-medium">{message}</p>
+            
+            {isDownloading && (
+                <div className="mb-2">
+                    <div className="w-full bg-gray-600 rounded-full h-1.5">
+                        <div 
+                            className="bg-blue-500 h-1.5 rounded-full transition-all duration-300" 
+                            style={{ width: `${downloadProgress}%` }}
+                        ></div>
+                    </div>
+                </div>
+            )}
+            
+            <div className="flex justify-between items-center">
+                <button
+                    onClick={onCheckUpdate}
+                    className="bg-blue-600 hover:bg-blue-700 text-white text-xs py-1 px-2 rounded-md transition-colors"
+                    disabled={isDownloading}
+                >
+                    Check for Updates
+                </button>
+                
+                {updateReady && (
+                    <button
+                        onClick={handleRestart}
+                        className="bg-green-600 hover:bg-green-700 text-white text-xs py-1 px-2 ml-2 rounded-md transition-colors"
+                    >
+                        Restart & Install
+                    </button>
+                )}
+            </div>
         </div>
     );
 }

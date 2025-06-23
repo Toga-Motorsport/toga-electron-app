@@ -24,6 +24,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
             console.log('Update message received:', message);
             callback(message);
         });
+    },
+
+    restartAndInstall: () => {
+        console.log('Renderer requesting app restart to install update');
+        ipcRenderer.send('restart-and-install');
     }
 });
 
