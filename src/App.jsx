@@ -145,9 +145,9 @@ function MainContent() {
 
             {user ? <UserProfile user={user} logout={logout}/> : <LoginPrompt/>}
 
-            {user && <Counter count={count} setCount={setCount}/>}
+            {/*{user && <Counter count={count} setCount={setCount}/>}*/}
 
-            {user && <UpdateStatus message={updateMessage}/>}
+            {/*{user && <UpdateStatus message={updateMessage}/>}*/}
 
             <p className="mt-8 text-white font-semibold text-center text-sm">
                 <span className="text-sm font-bold text-orange bg-gray-700 px-2 py-1 rounded-md">
