@@ -13,8 +13,10 @@ module.exports = {
         'yellow': '#ffee07',
         'black': '#100e0e',
         'orange': '#f15204',
+        'lightorange': '#f18104',
         'twitch': '#6441a5',
         'youtube': '#FF0000',
+        'lightblue' : '#04a3f1'
       },
       fontFamily: {
         'montserrat': ['"Montserrat"', 'cursive'],

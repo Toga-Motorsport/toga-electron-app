@@ -1,85 +1,90 @@
-// src/components/DiscordCallback.jsx
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import StatusMessage from "./StatusMessage";
+
 const DiscordCallback = () => {
-    const [status, setStatus] = useState('Processing Discord login...');
+    const [status, setStatus] = useState({ type: "loading", message: "Processing Discord login..." });
     const navigate = useNavigate();
     const location = useLocation();
-    const requestSent = useRef(false); // Add this ref to track if request was sent
+    const requestSent = useRef(false);
     const { login } = useAuth();
 
+    // Extract authorization code from URL parameters
+    const extractAuthCode = () => {
+        // Handle hash router format
+        const hashParams = location.hash.split('?');
+        if (hashParams.length > 1) {
+            return new URLSearchParams(hashParams[1]).get('code');
+        }
+        // Handle browser router format
+        return new URLSearchParams(location.search).get('code');
+    };
 
     useEffect(() => {
-        // Log the complete URL and all available parameters
         const handleDiscordCallback = async () => {
-            // Don't proceed if we've already made the request
             if (requestSent.current) return;
             requestSent.current = true;
 
             try {
-                let code;
-                const hashParams = location.hash.split('?');
-                if (hashParams.length > 1) {
-                    code = new URLSearchParams(hashParams[1]).get('code');
-                } else {
-                    // Fallback to traditional search params if not found in hash
-                    code = new URLSearchParams(location.search).get('code');
-                }
-                const isElectron = !!window.electronAPI;
-                if (isElectron) {
-                    code = await window.electronAPI.requestAuthCode();
-                    console.log('Retrieved code from Electron:', code);
-                }
+                setStatus({ type: "loading", message: "Verifying authorization code..." });
 
+                // Determine environment and get auth code
+                const isElectron = window?.electronAPI !== undefined;
+                let code = isElectron
+                    ? await window.electronAPI.requestAuthCode()
+                    : extractAuthCode();
 
                 if (!code) {
                     throw new Error('No authorization code received from Discord');
                 }
 
+                setStatus({ type: "loading", message: "Authenticating with server..." });
 
+                // Determine API URL based on environment
                 const apiUrl = isElectron
-                    ? 'https://togamotorsport.co.uk/api/auth/verify-discord' // Electron-specific endpoint
+                    ? 'http://togamotorsport.local/api/auth/verify-discord'
                     : '/api/auth/verify-discord';
-                // Send the code to your backend
+
                 const response = await fetch(apiUrl, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ code }),
-                    credentials: 'include', // Include cookies if needed
+                    credentials: 'include',
                 });
 
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({}));
-                    throw new Error(errorData.message || 'Failed to authenticate with server');
+                    throw new Error(errorData.message || `Server error (${response.status})`);
                 }
 
                 const data = await response.json();
-                // Store user data in localStorage
-                if (data.user) {
-                    login(data.user);
-                } else {
-                    console.warn('No user data received from backend');
+                console.log('Discord authentication response:', data);
+
+                if (!data.user) {
+                    throw new Error('Invalid user data received');
                 }
-                setStatus(<StatusMessage type="success" message="Login successful! Redirecting..."/>);
-                setTimeout(() => navigate('/'), 2000); // Redirect after 1 second
+
+                login(data.user);
+                setStatus({ type: "success", message: "Login successful! Redirecting..." });
+
+                setTimeout(() => navigate('/'), 1500);
             } catch (error) {
-                setStatus(<StatusMessage type="error" message={`Login failed: ${error.message}`} />);
-                setTimeout(() => navigate('/'), 2000); // Redirect after 1 second
+                console.error('Discord authentication error:', error);
+                setStatus({ type: "error", message: `Login failed: ${error.message}` });
+
+                setTimeout(() => navigate('/'), 2000);
             }
         };
 
         handleDiscordCallback();
-    }, [navigate, location]);
+    }, [navigate, location, login]);
+
     return (
-        <div className="discord-callback-container">
-            {status}
+        <div className="flex items-center justify-center min-h-[60vh] p-4">
+            <StatusMessage type={status.type} message={status.message} />
         </div>
     );
-    // Rest of component code
 };
 
 export default DiscordCallback;
