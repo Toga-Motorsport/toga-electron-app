@@ -43,7 +43,7 @@ const DiscordCallback = () => {
 
                 // Determine API URL based on environment
                 const apiUrl = isElectron
-                    ? 'http://togamotorsport.local/api/auth/verify-discord'
+                    ? 'https://togamotorsport.co.uk/api/auth/verify-discord'
                     : '/api/auth/verify-discord';
 
                 const response = await fetch(apiUrl, {
