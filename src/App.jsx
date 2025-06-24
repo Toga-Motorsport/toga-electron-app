@@ -5,6 +5,7 @@ import DiscordLogin from './components/DiscordLogin';
 import DiscordCallback from './components/DiscordCallback';
 import {AuthProvider, useAuth} from './context/AuthContext';
 import Cards from "./components/Cards";
+import FuelCalculator from './components/FuelCalculator';
 
 // More reliable detection for Electron environment
 const isElectronEnvironment = () => {
@@ -234,6 +235,7 @@ function App() {
                 <Routes>
                     <Route path="/auth/discord" element={<DiscordCallback/>}/>
                     <Route path="/" element={<MainContent/>}/>
+                    <Route path="/fuel-calculator" element={<FuelCalculator/>}/>
                 </Routes>
             </CustomRouter>
         </AuthProvider>
