@@ -4,6 +4,7 @@ import packageInfo from '../package.json';
 import DiscordLogin from './components/DiscordLogin';
 import DiscordCallback from './components/DiscordCallback';
 import {AuthProvider, useAuth} from './context/AuthContext';
+import Cards from "./components/Cards";
 
 // More reliable detection for Electron environment
 const isElectronEnvironment = () => {
@@ -24,7 +25,7 @@ function UpdateStatus({ message, onCheckUpdate }) {
     const isElectron = isElectronEnvironment();
     const [updateReady, setUpdateReady] = useState(false);
     const [downloadProgress, setDownloadProgress] = useState(0);
-    
+
     // Parse download progress from message
     useEffect(() => {
         if (message.includes('Downloaded')) {
@@ -34,41 +35,41 @@ function UpdateStatus({ message, onCheckUpdate }) {
                 setDownloadProgress(parseInt(percentMatch[1]));
             }
         }
-        
+
         if (message.includes('Update downloaded')) {
             setUpdateReady(true);
             setDownloadProgress(100);
         }
     }, [message]);
-    
+
     // Don't render if not in Electron or if message is empty
     if (!isElectron || message === '') return null;
-    
+
     // Handle restart to install update
     const handleRestart = () => {
         if (window.electronAPI) {
             window.electronAPI.restartAndInstall();
         }
     };
-    
+
     // Determine if currently downloading
     const isDownloading = message.includes('Download') && !message.includes('downloaded');
-    
+
     return (
         <div className="fixed bottom-4 right-4 bg-gray-800 p-3 rounded-lg shadow-md border border-gray-700 text-sm max-w-xs">
             <p className="text-gray-300 text-xs mb-2 font-medium">{message}</p>
-            
+
             {isDownloading && (
                 <div className="mb-2">
                     <div className="w-full bg-gray-600 rounded-full h-1.5">
-                        <div 
-                            className="bg-blue-500 h-1.5 rounded-full transition-all duration-300" 
+                        <div
+                            className="bg-blue-500 h-1.5 rounded-full transition-all duration-300"
                             style={{ width: `${downloadProgress}%` }}
                         ></div>
                     </div>
                 </div>
             )}
-            
+
             <div className="flex justify-between items-center">
                 <button
                     onClick={onCheckUpdate}
@@ -77,7 +78,7 @@ function UpdateStatus({ message, onCheckUpdate }) {
                 >
                     Check for Updates
                 </button>
-                
+
                 {updateReady && (
                     <button
                         onClick={handleRestart}
@@ -93,7 +94,7 @@ function UpdateStatus({ message, onCheckUpdate }) {
 
 function UserProfile({user, logout}) {
     return (
-        <div className="bg-gray-900 mx-auto p-4 rounded-xl shadow-xl border border-gray-600 mb-8 w-full max-w-6xl">
+        <div className="bg-gray-900 mx-auto p-4 rounded-xl shadow-xl border border-gray-600 mb-1 w-full max-w-6xl">
             <div className="grid grid-cols-4 items-center">
                 {/* Left column: User avatar and name */}
                 <div className="flex items-center col-span-1">
@@ -146,7 +147,7 @@ function UserProfile({user, logout}) {
 
 function LoginPrompt() {
     return (
-        <div className="bg-gray-900 mx-auto p-6 rounded-xl shadow-xl border border-gray-600 mb-8 w-full max-w-md">
+        <div className="bg-gray-900 mx-auto p-6 rounded-xl shadow-xl border border-gray-600 mb-3 w-full max-w-md">
             <h2 className="text-sm uppercase font-semibold text-orange mb-4 text-center">
                 Start your journey with TOGA Motorsport!
             </h2>
@@ -180,7 +181,7 @@ function MainContent() {
     const {user, logout} = useAuth();
     const appVersion = packageInfo.version;
     const isElectron = isElectronEnvironment();
-    
+
     // Listen for update messages
     useEffect(() => {
         if (isElectron && window.electronAPI) {
@@ -191,7 +192,7 @@ function MainContent() {
             });
         }
     }, [isElectron]);
-    
+
     // Function to check for updates
     const handleCheckUpdate = () => {
         if (isElectron && window.electronAPI) {
@@ -205,23 +206,22 @@ function MainContent() {
             className="container mx-auto flex flex-col items-center justify-center min-h-screen p-4 font-montserrat rounded-lg shadow-lg">
             <h1 className="text-4xl text-center font-bold text-orange mb-6 drop-shadow-md">
                 TOGA MOTORSPORT APP
-                <div className="text-center mb-4">
-
-                </div>
             </h1>
 
             {user ? <UserProfile user={user} logout={logout}/> : <LoginPrompt/>}
+            {user ? <Cards user={user}/> : null}
 
-            <p className="mt-8 text-white font-semibold text-center text-sm">
-                <span className="text-sm font-bold text-orange bg-gray-700 px-2 py-1 rounded-md">
-            v{appVersion}
-          </span> Built with love for you!
+            <p className="mt-2 mb-2 text-white font-semibold text-center text-sm">
+                 Built with love for you!
             </p>
-            
+            <p><span className="text-sm font-bold text-orange bg-gray-700 px-2 py-1 rounded-md">
+            v{appVersion}
+          </span></p>
+
             {/* Add the update status component */}
-            {isElectron && <UpdateStatus 
-                message={updateMessage} 
-                onCheckUpdate={handleCheckUpdate} 
+            {isElectron && <UpdateStatus
+                message={updateMessage}
+                onCheckUpdate={handleCheckUpdate}
             />}
         </div>
     );
