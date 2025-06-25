@@ -1,7 +1,7 @@
 {
   "name": "toga-motorsport-app",
   "private": true,
-  "version": "1.1.12",
+  "version": "1.1.13",
   "main": "electron/main.js",
   "description": "A React Electron app with Tailwind CSS and auto-updater.",
   "author": "Toga Motorsport <togamotorsport@gmail.com>",
