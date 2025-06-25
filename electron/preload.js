@@ -49,9 +49,9 @@ contextBridge.exposeInMainWorld('electron', {
         ipcRenderer.send('get-auth-code');
     },
 
-    // Open external links safely
+    // Open external links safely using IPC
     openExternal: (url) => {
-        console.log('Opening external URL:', url);
+        console.log('Sending open-external request for URL:', url);
         ipcRenderer.send('open-external', url);
     }
 });

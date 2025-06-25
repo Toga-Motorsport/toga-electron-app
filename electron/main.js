@@ -45,7 +45,7 @@ function createWindow() {
             preload: path.join(__dirname, 'preload.js'),
             nodeIntegration: false,
             contextIsolation: true,
-            devTools: false,
+            devTools: true,
             autoHideMenuBar :false,
         },
     });
@@ -216,8 +216,9 @@ app.whenReady().then(() => {
 
     // Handle external URL opening
     ipcMain.on('open-external', (event, url) => {
-        shell.openExternal(url);
-    });
+    console.log('Main process opening external URL:', url);
+    shell.openExternal(url);
+});
 
     // Handle requests for stored auth code
     ipcMain.on('get-auth-code', (event) => {

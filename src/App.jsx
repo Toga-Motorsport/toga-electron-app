@@ -6,6 +6,7 @@ import DiscordCallback from './components/DiscordCallback';
 import {AuthProvider, useAuth} from './context/AuthContext';
 import Cards from "./components/Cards";
 import FuelCalculator from './components/FuelCalculator';
+import SocialCTA from './components/SocialCTA';
 
 // More reliable detection for Electron environment
 const isElectronEnvironment = () => {
@@ -96,25 +97,25 @@ function UpdateStatus({ message, onCheckUpdate }) {
 function UserProfile({user, logout}) {
     return (
         <div className="bg-gray-900 mx-auto p-4 rounded-xl shadow-xl border border-gray-600 mb-1 w-full max-w-6xl">
-            <div className="grid grid-cols-4 items-center">
+            <div className="grid grid-cols-1 md:grid-cols-4 items-center">
                 {/* Left column: User avatar and name */}
-                <div className="flex items-center col-span-1">
+                <div className="flex items-center col-span-1 md:col-span-1 mx-auto md:mx-0">
                     {user.avatar && (
                         <img
                             src={user.avatar}
                             alt="User Avatar"
-                            className="w-10 h-10 rounded-full mr-2"
+                            className="w-10 h-10 rounded-full mr-2 hidden md:block"
                         />
                     )}
-                    <div className="flex flex-col">
+                    <div className="flex flex-col mx-auto md:mx-0">
                         <p className="text-base font-semibold text-orange shadow-white drop-shadow-md truncate">{user.name}</p>
-                        <p className="text-xs font-bold text-lightorange truncate">{user?.driver_licence?.licence + ' Licence' || 'No Licence Found'}</p>
+                        <p className="text-xs font-bold text-lightorange truncate text-center md:text-left">{user?.driver_licence?.licence + ' Licence' || 'No Licence Found'}</p>
                     </div>
                 </div>
 
 
-                <div className="rounded-lg py-2 col-span-1 md:col-span-2">
-                    <div className="grid grid-cols-3 divide-x divide-gray-500 w-full">
+                <div className="rounded-lg py-2 col-span-2 md:col-span-2">
+                    <div className="grid grid-cols-1 xs:grid-cols-3 md:grid-cols-3 md:divide-x md:divide-gray-500 w-full">
                         <div className="flex flex-col items-center px-2 py-2">
                             <p className="text-xs pb-0.5 text-gray-400">Favorite Car</p>
                             <p className="text-md font-semibold text-lightblue text-center">{user?.fav_car || 'Not Set'}</p>
@@ -133,7 +134,7 @@ function UserProfile({user, logout}) {
                 </div>
 
                 {/* Right column: Logout button */}
-                <div className="flex justify-end">
+                <div className="flex justify-end mx-auto md:mx-0">
                     <button
                         onClick={logout}
                         className="text-sm bg-white px-3 py-1 rounded font-bold uppercase text-red-600 hover:text-red-800 transition-colors"
@@ -211,6 +212,7 @@ function MainContent() {
 
             {user ? <UserProfile user={user} logout={logout}/> : <LoginPrompt/>}
             {user ? <Cards user={user}/> : null}
+            
 
             <p className="mt-2 mb-2 text-white font-semibold text-center text-sm">
                  Built with love for you!

@@ -39,7 +39,7 @@ const FuelCalculatorForm = () => {
     };
 
     return (
-        <div className="w-1/2 mx-w-2xl mx-auto p-9 bg-gray-900 rounded-lg shadow-md mt-3">
+        <div className="w-1/2 mx-w-2xl mx-auto p-9 bg-gray-900 rounded-md shadow-md mt-3">
             <h2 className="text-2xl font-bold text-center text-orange mb-6">Race Fuel Calculator</h2>
             <form onSubmit={calculateFuel}>
                 <div className="mb-4">
@@ -99,7 +99,7 @@ const FuelCalculatorForm = () => {
                             value={hours}
                             onChange={(e) => setHours(e.target.value)}
                             required
-                            className="w-24 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange focus:border-orange"
+                            className="w-48 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange focus:border-orange"
                         />
                         <span className="text-orange">hrs</span>
                         <input
@@ -110,7 +110,7 @@ const FuelCalculatorForm = () => {
                             value={minutes}
                             onChange={(e) => setMinutes(e.target.value)}
                             required
-                            className="w-24 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange focus:border-orange"
+                            className="w-48 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange focus:border-orange"
                         />
                         <span className="text-orange">min</span>
                     </div>
@@ -124,21 +124,21 @@ const FuelCalculatorForm = () => {
                 </button>
                 
                 {totalFuel !== null && (
-                    <div className="mt-6 p-4 bg-lightorange rounded-md border border-orange">
-                        <h3 className="text-lg font-medium text-white mb-3">Race Strategy</h3>
+                    <div className="mt-6 p-4 bg-gray-800 rounded-md border border-orange">
+                        <h3 className="text-lg font-bold text-orange mb-3">Race Strategy</h3>
                         
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <p className="text-sm text-white">Total Fuel Required</p>
-                                <p className="text-xl font-bold text-black">{totalFuel} L</p>
+                                <p className="text-xl font-bold text-orange">{totalFuel} L</p>
                             </div>
                             <div>
                                 <p className="text-sm text-white">Stints Needed</p>
-                                <p className="text-xl font-bold text-black">{stintsNeeded}</p>
+                                <p className="text-xl font-bold text-orange">{stintsNeeded}</p>
                             </div>
                             <div className="col-span-2">
                                 <p className="text-sm text-white">Laps Per Stint (avg)</p>
-                                <p className="text-xl font-bold text-black">{lapsPerStint}</p>
+                                <p className="text-xl font-bold text-orange">{lapsPerStint}</p>
                             </div>
                         </div>
                     </div>
