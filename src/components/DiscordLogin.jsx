@@ -9,15 +9,39 @@ const DiscordLogin = () => {
 
     useEffect(() => {
         // Calculate the redirect URI once when the component mounts
-        const calculatedUri = import.meta.env.VITE_REDIRECT_URI ||
-            `${window.location.origin}/#/auth/discord`;
+        // Check if we're in Electron or browser environment
+        const isElectron = window?.electronAPI !== undefined;
+        
+        let calculatedUri;
+        if (import.meta.env.VITE_REDIRECT_URI) {
+            calculatedUri = import.meta.env.VITE_REDIRECT_URI;
+        } else if (isElectron) {
+            // For Electron, use the local domain
+            calculatedUri = 'https://togamotorsport.co.uk/auth/discord/cb';
+        } else {
+            // For browser, use the root URL since Discord doesn't support hash fragments in redirect URIs
+            calculatedUri = `${window.location.origin}/auth/discord`;
+        }
+        
         setRedirectUri(calculatedUri);
+        console.log('Environment detected:', isElectron ? 'Electron' : 'Browser');
         console.log('Redirect URI set to:', calculatedUri);
     }, []);
 
     const handleLogin = () => {
         setIsLoading(true);
-        const discordAuthUrl = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${redirectUri}&response_type=code&scope=identify%20email`;
+        
+        // Use environment variables with fallbacks
+        const clientId = DISCORD_CLIENT_ID || '1388623370475667698';
+        const encodedRedirectUri = encodeURIComponent(redirectUri);
+        console.log('Client ID:', redirectUri);
+        
+        const discordAuthUrl = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${encodedRedirectUri}&response_type=code&scope=identify+email+guilds`;
+        
+        console.log('Redirecting to Discord OAuth URL:', discordAuthUrl);
+        console.log('Client ID:', clientId);
+        console.log('Redirect URI:', redirectUri);
+        
         window.location.href = discordAuthUrl;
     };
 

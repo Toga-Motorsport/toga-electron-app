@@ -6,7 +6,10 @@ import DiscordCallback from './components/DiscordCallback';
 import {AuthProvider, useAuth} from './context/AuthContext';
 import Cards from "./components/Cards";
 import FuelCalculator from './components/FuelCalculator';
-import SocialCTA from './components/SocialCTA';
+import Events from "./components/Events";
+import EventSingle from "./components/EventSingle";
+import DebugAuth from "./components/DebugAuth";
+import DiscordRedirect from "./components/DiscordRedirect";
 
 // More reliable detection for Electron environment
 const isElectronEnvironment = () => {
@@ -236,8 +239,11 @@ function App() {
             <CustomRouter>
                 <Routes>
                     <Route path="/auth/discord" element={<DiscordCallback/>}/>
+                    <Route path="/debug-auth" element={<DebugAuth/>}/>
                     <Route path="/" element={<MainContent/>}/>
                     <Route path="/fuel-calculator" element={<FuelCalculator/>}/>
+                    <Route path="/my-events" element={<Events/>}/>
+                    <Route path="/event/:id" element={<EventSingle/>}/>
                 </Routes>
             </CustomRouter>
         </AuthProvider>
