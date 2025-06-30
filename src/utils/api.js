@@ -114,8 +114,11 @@ export const api = {
     // Events endpoints
     events: {
         getMyEvents: () => apiRequest('/api/my-events'),
-        getEvent: (id) => apiRequest(`/api/my-events/${id}`, { method: 'POST' })
+        getEvent: (id) => apiRequest(`/api/my-events/${id}`, { method: 'POST' }),
+        getActiveEvents: () => apiRequest(`/api/get-active-events`),
     },
+
+
     
     // Generic endpoints
     get: (endpoint) => apiRequest(endpoint),

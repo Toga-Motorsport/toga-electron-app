@@ -9,7 +9,7 @@ import FuelCalculator from './components/FuelCalculator';
 import Events from "./components/Events";
 import EventSingle from "./components/EventSingle";
 import DebugAuth from "./components/DebugAuth";
-import DiscordRedirect from "./components/DiscordRedirect";
+import ReportIncident from "./components/ReportIncident";
 
 // More reliable detection for Electron environment
 const isElectronEnvironment = () => {
@@ -242,6 +242,7 @@ function App() {
                     <Route path="/debug-auth" element={<DebugAuth/>}/>
                     <Route path="/" element={<MainContent/>}/>
                     <Route path="/fuel-calculator" element={<FuelCalculator/>}/>
+                    <Route path="/report-incident" element={<ReportIncident/>}/>
                     <Route path="/my-events" element={<Events/>}/>
                     <Route path="/event/:id" element={<EventSingle/>}/>
                 </Routes>
