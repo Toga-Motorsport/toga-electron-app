@@ -1,5 +1,7 @@
 // API utility for making requests to Laravel backend with Sanctum authentication
 
+import { data } from "react-router-dom";
+
 const isElectron = () => window?.electronAPI !== undefined;
 
 const getBaseUrl = () => {
@@ -116,6 +118,7 @@ export const api = {
         getMyEvents: () => apiRequest('/api/my-events'),
         getEvent: (id) => apiRequest(`/api/my-events/${id}`, { method: 'POST' }),
         getActiveEvents: () => apiRequest(`/api/get-active-events`),
+        handleEventSelection: (sessionId) => apiRequest('/api/tracks', { method: 'POST', body: JSON.stringify({ session_id: sessionId }) }),
     },
 
 
